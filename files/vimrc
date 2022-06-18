@@ -1,0 +1,41 @@
+"call plug#begin('~/.vim/plugged')
+"
+"Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+"Plug 'junegunn/fzf.vim'
+"
+"call plug#end()
+
+colorscheme desert
+
+"show cursor position
+
+set ruler number relativenumber cursorline
+set nowrap expandtab
+set tabstop=4 shiftwidth=4 softtabstop=4
+syntax on
+
+"make tabs easier
+set autoindent smarttab shiftround
+
+"search
+set showmatch hlsearch ignorecase incsearch smartcase
+
+"enable on slow connection
+set nolazyredraw
+set nottyfast
+
+"Automatically reload
+set autoread
+
+"tab shortcuts
+noremap <silent> tn :tabnew<CR>
+noremap <silent> tw :tabclose<CR>
+
+"disable F1
+noremap <silent> <F1> <ESC>
+
+"shortcut for clearing search highlight
+noremap <silent> <leader><BS> :noh<CR>
+
+"fzf
+noremap <C-T> :GFiles<CR>
