@@ -1,0 +1,160 @@
+# cryptsetup information taken from:
+# https://opensource.com/article/21/4/linux-encryption
+---
+- name: Verify vault password is available
+  ansible.builtin.assert:
+    that:
+      - ' syncthing_vault_password | mandatory'
+
+- name: Check if encrypted volume is mounted
+  ansible.builtin.shell: 'mount | grep {{ syncthing_vault_path }}'
+  register: mount_info
+  ignore_errors: true
+  tags:
+    - skip_ansible_lint  # mount check mode sucks?
+
+- name: Parse mount output
+  ansible.builtin.set_fact: 'already_mounted={{ mount_info.rc == 0 }}'
+
+- name: Create encrypted directory
+  when: not already_mounted
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: '{{ syncthing_vault_path }}'
+    owner: '{{ ansible_user_id }}'
+    mode: '755'
+
+- name: Create blob to use as vault
+  when: not already_mounted
+  ansible.builtin.command:
+    cmd: 'dd if="/dev/urandom" of={{ syncthing_vault_img_path | quote }} bs=1M count={{ syncthing_vault_size_mb }}'
+    creates: '{{ syncthing_vault_img_path }}'
+
+- name: Copy vault helper script (unlock)
+  when: not already_mounted
+  ansible.builtin.template:
+    src: unlock.j2
+    dest: '{{ syncthing_vault_path }}/unlock'
+    owner: '{{ ansible_user_id }}'
+    mode: '755'
+
+- name: Copy vault helper script (lock)
+  when: not already_mounted
+  ansible.builtin.template:
+    src: lock.j2
+    dest: '{{ syncthing_vault_path }}/lock'
+    owner: '{{ ansible_user_id }}'
+    mode: '755'
+
+# TODO: Do this without writing to SSD/HDD. (e.g. use tmpfs)
+- name: Copy secret key
+  when: not already_mounted
+  ansible.builtin.copy:
+    content: '{{ vault_password }}'
+    dest: '{{ syncthing_vault_key_path }}'
+    owner: '{{ ansible_user_id }}'
+    mode: '644'
+
+- name: Set up encrypted blob
+  when: not already_mounted
+  block:
+    - name: Open encrypted blob
+      become: true
+      ansible.builtin.command:
+        cmd: 'cryptsetup open -d {{ syncthing_vault_key_path | quote }} --type luks {{ syncthing_vault_img_path | quote }} {{ syncthing_vault_name }}'
+        creates: '{{ syncthing_vault_dev_mapper_path }}'
+      ignore_errors: true
+      register: encrypt_check
+
+    - name: Check result
+      ansible.builtin.assert:
+        that:
+          - encrypt_check.rc == 0 or 'already exists.' in encrypt_check.stderr
+
+  rescue:
+    - name: Encrypt blob
+      ansible.builtin.shell:
+        cmd: 'echo YES | cryptsetup luksFormat {{ syncthing_vault_img_path | quote }} -d {{ syncthing_vault_key_path | quote }}'
+      tags:
+        - skip_ansible_lint  # No easy way to test this, hence rescue block
+
+    - name: Open encrypted blob
+      become: true
+      ansible.builtin.command:
+        cmd: 'cryptsetup open -d {{ syncthing_vault_key_path | quote }} --type luks {{ syncthing_vault_img_path | quote }} {{ syncthing_vault_name }}'
+        creates: '{{ syncthing_vault_dev_mapper_path }}'
+
+- name: Delete secret key
+  when: not already_mounted
+  ansible.builtin.file:
+    path: '{{ syncthing_vault_key_path }}'
+    state: absent
+
+- name: Mount encrypted vault
+  when: not already_mounted
+  block:
+    - name: Mount encrypted volume
+      become: true
+      ansible.builtin.command:
+        cmd: 'mount {{ syncthing_vault_dev_mapper_path }} {{ syncthing_vault_path }}'
+      tags:
+        - skip_ansible_lint  # hard to test this hence rescue block
+  rescue:
+    - name: Set up filesystem
+      become: true
+      ansible.builtin.command:
+        cmd: 'mkfs.ext4 -L {{ syncthing_vault_name }} {{ syncthing_vault_dev_mapper_path | quote }}'
+      tags:
+        - skip_ansible_lint  # hard to test this hence rescue block
+
+    - name: Mount encrypted volume
+      become: true
+      ansible.builtin.command:
+        cmd: 'mount {{ syncthing_vault_dev_mapper_path }} {{ syncthing_vault_path }}'
+      tags:
+        - skip_ansible_lint  # hard to test this hence rescue block
+
+- name: Set vault permissions
+  become: true
+  ansible.builtin.file:
+    path: '{{ syncthing_vault_path }}'
+    owner: '{{ syncthing_user }}'
+    group: '{{ syncthing_group }}'
+    mode: '0775'
+
+- name: Add user to syncthing group
+  ansible.builtin.user:
+    name: '{{ ansible_user_id }}'
+    groups: '{{ syncthing_group }}'
+    append: true
+
+- name: Install syncthing
+  become: true
+  ansible.builtin.apt:
+    name: syncthing
+    cache_valid_time: 3600
+
+- name: Create syncthing group
+  ansible.builtin.group:
+    name: '{{ syncthing_group }}'
+
+- name: Create syncthing user
+  ansible.builtin.user:
+    name: '{{ syncthing_user }}'
+    group: '{{ syncthing_group }}'
+
+- name: Copy syncthing daemon definition
+  become: true
+  ansible.builtin.copy:
+    src: syncthing.service
+    dest: '/etc/systemd/system/{{ syncthing_systemd_service_name }}'
+    owner: '{{ ansible_user_id }}'
+    mode: '0755'
+
+- name: Install systemd service
+  become: true
+  ansible.builtin.systemd:
+    name: '{{ syncthing_systemd_service_name }}'
+    enabled: true
+    state: started

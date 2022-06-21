@@ -1,3 +1,4 @@
+# TODO: Update unlock script to unlock vault
 ---
 - name: Ansible setup
   hosts: all
@@ -8,94 +9,21 @@
       key: '{{ lookup("file", "/home/" + ansible_user_id + "/.ssh/id_rsa.pub") }}'
     when: ansible_connection != 'local'
 
-
 - name: Install multimedia software
   hosts: multimedia
   gather_facts: false
-
-  tasks:
-    - name: Add Spotify GPG key
-      ansible.builtin.apt_key:
-        url: https://download.spotify.com/debian/pubkey_5E3C45D7B312C643.gpg
-      become: true
-    - name: Add Spotify apt repository
-      ansible.builtin.apt_repository:
-        repo: deb http://repository.spotify.com stable non-free
-      become: true
-    - name: Install Spotify
-      ansible.builtin.apt:
-        name: spotify-client
-        cache_valid_time: 3600
-      become: true
-
-    - name: Install VLC
-      ansible.builtin.apt:
-        name: vlc
-        cache_valid_time: 3600
-      become: true
-
-    - name: Install Clementine
-      ansible.builtin.apt:
-        name: clementine
-        cache_valid_time: 3600
-      become: true
-
+  roles:
+    - multimedia
 
 - name: Install development tools
   hosts: dev
-  tasks:
-    - name: Install Vim
-      ansible.builtin.apt:
-        name: vim
-        cache_valid_time: 3600
-      become: true
-    - name: Copy .vimrc
-      ansible.builtin.copy:
-        src: files/vimrc
-        dest: '{{ ansible_env.HOME }}/.vimrc'
-        owner: '{{ ansible_user_id }}'
-        mode: '0644'
-    - name: Install plug (Vim package manager)
-      ansible.builtin.get_url:
-        dest: ~/.vim/autoload/plug.vim
-        url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-        mode: '0644'
-    - name: Install Vim plugins
-      ansible.builtin.command:
-        cmd: vim +'PlugInstall --sync' +qa
-        creates: '{{ ansible_env.HOME }}/.vim/plugged/fzf.vim'
-
-    - name: Add VS Code GPG Key
-      ansible.builtin.apt_key:
-        url: https://packages.microsoft.com/keys/microsoft.asc
-    - name: Add VS Code Repository
-      ansible.builtin.apt_repository:
-        repo: deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main
-    - name: Install VS Code
-      ansible.builtin.apt:
-        name: code
-        cache_valid_time: 3600
-
-    - name: Download fzf
-      ansible.builtin.git:
-        repo: https://github.com/junegunn/fzf.git
-        dest: '{{ ansible_env.HOME }}/.fzf'
-        version: 'master'
-        depth: 1
-        single_branch: true
-    - name: Install fzf autocompletion
-      ansible.builtin.command:
-        cmd: 'bash {{ ansible_env.HOME }}/.fzf/install'
-      tags:
-        - skip_ansible_lint
+  roles:
+    - dev_tools
 
 - name: Set up syncthing
   hosts: syncthing
-  become: true
   gather_facts: false
-
-  tasks:
-    - name: Install syncthing
-      ansible.builtin.apt:
-        name: syncthing
-        cache_valid_time: 3600
+  roles:
+    - syncthing
+  vars:
+    syncthing_vault_password: '{{ vault_password }}'

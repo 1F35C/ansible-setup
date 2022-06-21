@@ -1,0 +1,14 @@
+---
+- name: vscode - Add VS Code GPG Key
+  ansible.builtin.apt_key:
+    url: '{{ vscode_apt_key_url }}'
+
+- name: vscode - Add VS Code Repository
+  ansible.builtin.apt_repository:
+    repo: '{{ vscode_apt_repository }}'
+
+- name: vscode - Install VS Code
+  become: true
+  ansible.builtin.apt:
+    name: code
+    cache_valid_time: 3600

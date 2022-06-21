@@ -1,0 +1,21 @@
+---
+- name: vim - Install Vim
+  become: true
+  ansible.builtin.apt:
+    name: vim
+    cache_valid_time: 3600
+- name: vim - Copy .vimrc
+  ansible.builtin.copy:
+    src: vimrc
+    dest: '{{ ansible_env.HOME }}/.vimrc'
+    owner: '{{ ansible_user_id }}'
+    mode: '0644'
+- name: vim - Install plug (Vim package manager)
+  ansible.builtin.get_url:
+    dest: ~/.vim/autoload/plug.vim
+    url: '{{ vim_plug_url }}'
+    mode: '0644'
+- name: vim - Install Vim plugins
+  ansible.builtin.command:
+    cmd: vim +'PlugInstall --sync' +qa
+    creates: '{{ ansible_env.HOME }}/.vim/plugged/fzf.vim'

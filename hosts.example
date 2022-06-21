@@ -1,0 +1,17 @@
+localhost anshble_ssh_host=127.0.0.1 ansible_connection=local obsidian_path=/mnt/B0B89735B896F8D4/Documents/Obsidian/
+vivobook ansible_ssh_host=192.168.1.180 ansible_user=user_name
+
+[dev]
+localhost
+vivobook
+
+[multimedia]
+localhost
+vivobook
+
+[syncthing]
+localhost
+vivobook
+
+[obsidian_master]
+localhost

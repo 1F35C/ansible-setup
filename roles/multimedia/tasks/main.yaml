@@ -1,0 +1,26 @@
+---
+- name: Add Spotify GPG key
+  ansible.builtin.apt_key:
+    url: '{{ spotify_apt_key_url }}'
+  become: true
+- name: Add Spotify apt repository
+  ansible.builtin.apt_repository:
+    repo: '{{ spotify_apt_repository }}'
+  become: true
+- name: Install Spotify
+  ansible.builtin.apt:
+    name: spotify-client
+    cache_valid_time: 3600
+  become: true
+
+- name: Install VLC
+  ansible.builtin.apt:
+    name: vlc
+    cache_valid_time: 3600
+  become: true
+
+- name: Install Clementine
+  ansible.builtin.apt:
+    name: clementine
+    cache_valid_time: 3600
+  become: true

@@ -1,0 +1,14 @@
+---
+syncthing_vault_password: ''
+
+syncthing_vault_name: 'encrypted'
+syncthing_vault_path: '/Encrypted'
+syncthing_vault_key_path: '{{ syncthing_vault_path }}/banana'
+syncthing_vault_img_path: '{{ syncthing_vault_path }}/encrypted.img'
+syncthing_vault_dev_mapper_path: '/dev/mapper/{{ syncthing_vault_name }}'
+syncthing_vault_size_mb: 2048
+
+syncthing_user: 'syncthing'
+syncthing_group: 'syncthing'
+syncthing_systemd_service_name: 'syncthing@{{ syncthing_user }}.service'
+syncthing_systemd_service_file_url: 'https://raw.githubusercontent.com/syncthing/syncthing/release/etc/linux-systemd/system/syncthing%40.service'

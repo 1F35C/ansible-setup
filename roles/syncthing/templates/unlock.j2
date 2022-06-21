@@ -1,0 +1,21 @@
+#!/bin/bash
+
+VAULT_NAME="{{ syncthing_vault_name }}"
+VAULT_PATH="{{ syncthing_vault_path }}"
+VAULT_IMG_PATH="{{ syncthing_vault_img_path }}"
+VAULT_DEV_MAPPER_PATH="{{ syncthing_vault_dev_mapper_path }}"
+TMPFS_DIR="/tmp/vault_pw"
+
+cleanup() {
+  sudo umount "$TMPFS_DIR"
+}
+trap cleanup EXIT
+
+mkdir -p "$TMPFS_DIR"
+
+sudo mount -t tmpfs -o size=1m tmpfs "$TMPFS_DIR"
+read -e -p "ENTER VAULT PASSWORD:" PASSWORD
+echo -n $PASSWORD > "$TMPFS_DIR/key"
+[ -e "$VAULT_DEV_MAPPER_PATH" ] || sudo cryptsetup open -d "$TMPFS_DIR/key" --type luks "$VAULT_IMG_PATH" "$VAULT_NAME"
+
+[ -n "$(mount | grep "$VAULT_PATH")" ] || sudo mount "$VAULT_DEV_MAPPER_PATH" "$VAULT_PATH"

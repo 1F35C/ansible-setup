@@ -1,0 +1,8 @@
+#!/bin/bash
+
+VAULT_NAME="{{ syncthing_vault_name }}"
+VAULT_PATH="{{ syncthing_vault_path }}"
+VAULT_DEV_MAPPER_PATH="{{ syncthing_vault_dev_mapper_path }}"
+
+[ -n "$(mount | grep "$VAULT_PATH")" ] && sudo umount "$VAULT_PATH"
+[ -e "$VAULT_DEV_MAPPER_PATH" ] && sudo cryptsetup close "$VAULT_NAME"
