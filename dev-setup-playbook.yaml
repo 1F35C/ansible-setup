@@ -1,4 +1,3 @@
-# TODO: Update unlock script to unlock vault
 ---
 - name: Ansible setup
   hosts: all
@@ -19,11 +18,3 @@
   hosts: dev
   roles:
     - dev_tools
-
-- name: Set up syncthing
-  hosts: syncthing
-  gather_facts: false
-  roles:
-    - syncthing
-  vars:
-    syncthing_vault_password: '{{ vault_password }}'

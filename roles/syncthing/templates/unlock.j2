@@ -14,7 +14,7 @@ trap cleanup EXIT
 mkdir -p "$TMPFS_DIR"
 
 sudo mount -t tmpfs -o size=1m tmpfs "$TMPFS_DIR"
-read -e -p "ENTER VAULT PASSWORD:" PASSWORD
+read -esp "ENTER VAULT PASSWORD:" PASSWORD
 echo -n $PASSWORD > "$TMPFS_DIR/key"
 [ -e "$VAULT_DEV_MAPPER_PATH" ] || sudo cryptsetup open -d "$TMPFS_DIR/key" --type luks "$VAULT_IMG_PATH" "$VAULT_NAME"
 

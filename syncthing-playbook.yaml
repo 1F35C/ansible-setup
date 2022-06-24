@@ -1,0 +1,7 @@
+---
+- name: Set up syncthing
+  hosts: syncthing
+  roles:
+    - syncthing
+  vars:
+    syncthing_vault_password: '{{ vault_password }}'
