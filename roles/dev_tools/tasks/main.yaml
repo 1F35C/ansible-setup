@@ -1,4 +1,6 @@
 ---
+- name: Configure Bash and Git
+  ansible.builtin.import_tasks: bash_git_config.yaml
 - name: Install Vim
   ansible.builtin.import_tasks: vim.yaml
 - name: Install VS Code

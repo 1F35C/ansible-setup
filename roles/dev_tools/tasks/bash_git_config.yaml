@@ -1,0 +1,55 @@
+---
+- name: bash_git_config - Copy .bashrc addendum
+  ansible.builtin.copy:
+    src: bashrc
+    dest: '{{ ansible_env.HOME }}/.bashrc.ansible'
+    owner: '{{ ansible_user_id }}'
+    mode: '0644'
+
+- name: bash_git_config - Modify .bashrc to use addendum
+  ansible.builtin.lineinfile:
+    path: '{{ ansible_env.HOME }}/.bashrc'
+    line: 'source {{ ansible_env.HOME }}/.bashrc.ansible'
+    state: present
+
+- name: bash_git_config - Get git config
+  ansible.builtin.command:
+    cmd: git config -l
+  register: git_config_info
+  changed_when: false
+
+- name: bash_git_config - Set git user.name
+  when: 'not ("user.name=" + git_name) in git_config_info.stdout'
+  ansible.builtin.command:
+    cmd: git config --global user.name "{{ git_name }}"
+  tags:
+    - skip_ansible_lint # git config is not supported by git module
+
+- name: bash_git_config - Set git user.email
+  when: 'not ("user.email=" + git_email) in git_config_info.stdout'
+  ansible.builtin.command:
+    cmd: git config --global user.email "{{ git_email }}"
+  tags:
+    - skip_ansible_lint # git config is not supported by git module
+
+- name: bash_git_config - Set git core.editor
+  when: 'not ("core.editor=" + git_editor) in git_config_info.stdout'
+  ansible.builtin.command:
+    cmd: git config --global core.editor "{{ git_editor }}"
+  tags:
+    - skip_ansible_lint # git config is not supported by git module
+
+- name: bash_git_config - Set git credential.helper
+  when: 'not ("credential.helper=" + git_credential_helper) in git_config_info.stdout'
+  ansible.builtin.command:
+    cmd: git config --global credential.helper "{{ git_credential_helper }}"
+  tags:
+    - skip_ansible_lint # git config is not supported by git module
+
+- name: bash_git_config - Set git pull.rebase
+  when: 'not ("pull.rebase=" + git_pull_rebase) in git_config_info.stdout'
+  ansible.builtin.command:
+    cmd: git config --global pull.rebase "{{ git_pull_rebase }}"
+  tags:
+    - skip_ansible_lint # git config is not supported by git module
+

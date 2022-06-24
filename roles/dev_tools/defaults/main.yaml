@@ -1,4 +1,10 @@
 ---
+git_name: '1F35C'
+git_email: '95659230+1F35C@users.noreply.github.com'
+git_editor: 'vim'
+git_credential_helper: 'store'
+git_pull_rebase: 'false'
+
 vim_plug_url: 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 vscode_apt_key_url: 'https://packages.microsoft.com/keys/microsoft.asc'
 vscode_apt_repository: 'deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main'
