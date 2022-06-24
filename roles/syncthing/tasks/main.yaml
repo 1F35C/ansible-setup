@@ -23,7 +23,7 @@
     state: directory
     path: '{{ syncthing_vault_path }}'
     owner: '{{ ansible_user_id }}'
-    mode: '755'
+    mode: '777'
 
 - name: Create blob to use as vault
   when: not already_mounted
@@ -119,35 +119,13 @@
   become: true
   ansible.builtin.file:
     path: '{{ syncthing_vault_path }}'
-    owner: '{{ syncthing_user }}'
-    group: '{{ syncthing_group }}'
+    owner: '{{ ansible_user_id }}'
     mode: '0775'
-
-- name: Add user to syncthing group
-  ansible.builtin.user:
-    name: '{{ ansible_user_id }}'
-    groups: '{{ syncthing_group }}'
-    append: true
-
-- name: Install syncthing
-  become: true
-  ansible.builtin.apt:
-    name: syncthing
-    cache_valid_time: 3600
-
-- name: Create syncthing group
-  ansible.builtin.group:
-    name: '{{ syncthing_group }}'
-
-- name: Create syncthing user
-  ansible.builtin.user:
-    name: '{{ syncthing_user }}'
-    group: '{{ syncthing_group }}'
 
 - name: Copy syncthing daemon definition
   become: true
-  ansible.builtin.copy:
-    src: syncthing.service
+  ansible.builtin.template:
+    src: syncthing.service.j2
     dest: '/etc/systemd/system/{{ syncthing_systemd_service_name }}'
     owner: '{{ ansible_user_id }}'
     mode: '0755'

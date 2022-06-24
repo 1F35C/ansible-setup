@@ -10,5 +10,5 @@ syncthing_vault_size_mb: 2048
 
 syncthing_user: 'syncthing'
 syncthing_group: 'syncthing'
-syncthing_systemd_service_name: 'syncthing@{{ syncthing_user }}.service'
+syncthing_systemd_service_name: 'syncthing@{{ ansible_user_id }}.service'
 syncthing_systemd_service_file_url: 'https://raw.githubusercontent.com/syncthing/syncthing/release/etc/linux-systemd/system/syncthing%40.service'
