@@ -1,0 +1,23 @@
+---
+- name: vscode - Download VS Code repository key
+  become: true
+  ansible.builtin.get_url:
+    url: '{{ vscode_apt_key_url }}'
+    dest: /etc/apt/keyrings/vscode.asc
+
+- name: vscode - Add VS Code repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/vscode.asc] https://packages.microsoft.com/repos/code stable main"
+    state: present
+
+- name: Update APT package cache
+  become: true
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: vscode - Install VS Code
+  become: true
+  ansible.builtin.apt:
+    name: code
+    cache_valid_time: 3600

@@ -5,7 +5,5 @@ install:
 		&& pipx install --include-deps "ansible~=10.2"
 all: 
 	ansible-playbook --ask-become-pass -i hosts -e "vault_password=$(password)" everything-playbook.yaml
-syncthing:
-	ansible-playbook --ask-become-pass -i hosts -e "vault_password=$(password)" syncthing-playbook.yaml
-setup:
+dev:
 	ansible-playbook --ask-become-pass -i hosts dev-setup-playbook.yaml
