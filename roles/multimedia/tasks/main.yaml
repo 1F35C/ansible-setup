@@ -3,10 +3,12 @@
   ansible.builtin.apt_key:
     url: '{{ spotify_apt_key_url }}'
   become: true
+
 - name: Add Spotify apt repository
   ansible.builtin.apt_repository:
     repo: '{{ spotify_apt_repository }}'
   become: true
+
 - name: Install Spotify
   ansible.builtin.apt:
     name: spotify-client
