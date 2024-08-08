@@ -5,6 +5,11 @@ git_editor: 'vim'
 git_credential_helper: 'store'
 git_pull_rebase: 'false'
 
-vim_plug_url: 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+bin_dir: '~/bin/'
+
+nvim_plug_url: 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+nvim_archive_url: 'https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz'
+nvim_install_dir: '~/Applications/'
+
 vscode_apt_key_url: 'https://packages.microsoft.com/keys/microsoft.asc'
 vscode_apt_repository: 'deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main'

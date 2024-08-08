@@ -1,4 +1,4 @@
-call plug#begin('~/.vim/plugged')
+call plug#begin()
 
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
@@ -22,7 +22,6 @@ set showmatch hlsearch ignorecase incsearch smartcase
 
 "enable on slow connection
 set nolazyredraw
-set nottyfast
 
 "Automatically reload
 set autoread

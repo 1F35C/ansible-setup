@@ -1,0 +1,57 @@
+---
+
+- name: nvim - Ensure bin directory exists
+  ansible.builtin.file:
+    path: '{{ bin_dir }}'
+    state: directory
+
+- name: nvim - Ensure application directory exists
+  ansible.builtin.file:
+    path: '{{ nvim_install_dir }}'
+    state: directory
+
+- name: nvim - Create temporary directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: nvim
+  register: nvim_extract_dir
+
+- name: nvim - Download nvim
+  ansible.builtin.get_url:
+    url: '{{ nvim_archive_url }}'
+    dest: '{{ nvim_extract_dir.path }}/nvim.tar.gz'
+
+- name: nvim - Extract nvim
+  ansible.builtin.unarchive:
+    src: '{{ nvim_extract_dir.path }}/nvim.tar.gz'
+    dest: '{{ nvim_install_dir }}'
+    remote_src: yes
+
+- name: nvim - Create soft link in bin directory
+  ansible.builtin.file:
+    src: '{{ nvim_install_dir }}/nvim-linux64/bin/nvim'
+    dest: '{{ bin_dir }}/nvim'
+    state: link
+
+- name: nvim - Copy config
+  ansible.builtin.copy:
+    src: vimrc
+    dest: '{{ ansible_env.HOME }}/.vimrc'
+    owner: '{{ ansible_user_id }}'
+    mode: '0644'
+
+- name: nvim - Ensure autoload directory exists
+  ansible.builtin.file:
+    path: '~/.vim/autoload'
+    state: directory
+
+- name: nvim - Install plug (Vim package manager)
+  ansible.builtin.get_url:
+    dest: ~/.vim/autoload/plug.vim
+    url: '{{ nvim_plug_url }}'
+    mode: '0644'
+
+- name: nvim - Install Vim plugins
+  ansible.builtin.command:
+    cmd: vim +'PlugInstall --sync' +qa
+    creates: '{{ ansible_env.HOME }}/.vim/plugged/fzf.vim'
